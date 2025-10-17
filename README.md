@@ -22,3 +22,10 @@ Import-Module .\HardeningKitty.psm1
 ```ps1
 Invoke-HardeningKitty -Mode Audit -Log -Report
 ```
+
+## Ressources
+For this script, an external script created by Blake Drumm, available at this [link](https://blakedrumm.com/blog/set-and-check-user-rights-assignment/), is used.
+
+## Author
+
+- [BEUF Corentin](https://github.com/coco01370)
