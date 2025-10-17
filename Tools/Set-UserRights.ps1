@@ -210,13 +210,13 @@ param
 BEGIN
 {
 	#region Initialization
-	Write-Output '==================================================================='
-	Write-Output '==========================  Start of Script ======================='
-	Write-Output '==================================================================='
+	#Write-Output '==================================================================='
+	#Write-Output '==========================  Start of Script ======================='
+	#Write-Output '==================================================================='
 	
 	$checkingpermission = "Checking for elevated permissions..."
 	$scriptout += $checkingpermission
-	Write-Output $checkingpermission
+	#Write-Output $checkingpermission
 	if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 	{
 		$currentPath = $myinvocation.mycommand.definition
@@ -231,7 +231,7 @@ BEGIN
 	else
 	{
 		$permissiongranted = " Currently running as administrator - proceeding with script execution..."
-		Write-Output $permissiongranted
+		#Write-Output $permissiongranted
 	}
 	
 	Function Time-Stamp
@@ -363,7 +363,7 @@ PROCESS
 					Default                                      { "($right)" }
 				}
 				
-				Write-Output ("$(Time-Stamp)$ActionType `"$UserLogonRight`" right for user account: '$Username' on host: '$env:COMPUTERNAME'")
+				#Write-Output ("$(Time-Stamp)$ActionType `"$UserLogonRight`" right for user account: '$Username' on host: '$env:COMPUTERNAME'")
 				if ($Username -match "^S-.*-.*-.*$|^S-.*-.*-.*-.*-.*-.*$|^S-.*-.*-.*-.*-.*$|^S-.*-.*-.*-.*$")
 				{
 					$sid = $Username
@@ -566,7 +566,7 @@ PROCESS
 }
 END
 {
-	Write-Output "$(Time-Stamp)Script Completed!"
+	#Write-Output "$(Time-Stamp)Script Completed!"
 }
 
 # SIG # Begin signature block
