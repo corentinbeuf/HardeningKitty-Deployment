@@ -27,9 +27,9 @@ function StorePasswordUsingReversibleEncryption {
 #ID 1101, Account lockout duration
 #ID 1100, Account lockout threshold
 #ID 1102, Reset account lockout counter
-function AccountLockout {
-    Write-Host "Account lockout duration & Account lockout threshold & Reset account lockout counter"
-    net account /lockoutthreshold:10 /lockoutduration:15 /lockoutwindow:15
+function Set-AccountLockout {
+    Write-Host "`n[INFO] Setup account lockout..." -ForegroundColor Cyan
+    net accounts /lockoutthreshold:10 /lockoutduration:15 /lockoutwindow:15 | Out-Null
 }
 
 #ID 1200, Access this computer from the network
@@ -83,11 +83,11 @@ function Set-UserRightsAdd {
         @{ Username = "S-1-5-32-544"; UserRight = "SeInteractiveLogonRight" }, #BUILTIN\Administrators
         @{ Username = "S-1-5-32-545"; UserRight = "SeInteractiveLogonRight" }, #BUILTIN\Users
         @{ Username = "S-1-5-32-546"; UserRight = "SeDenyNetworkLogonRight"; }, #BUILTIN\Guests
-        @{ Username = "S-1-5-5-113"; UserRight = "SeDenyNetworkLogonRight"; }, #NT AUTHORITY\Local account
+        @{ Username = "S-1-5-113"; UserRight = "SeDenyNetworkLogonRight"; }, #NT AUTHORITY\Local account
         @{ Username = "S-1-5-32-546"; UserRight = "SeDenyBatchLogonRight"; }, #BUILTIN\Guests
         @{ Username = "S-1-5-32-546"; UserRight = "SeDenyServiceLogonRight"; }, #BUILTIN\Guests
         @{ Username = "S-1-5-32-546"; UserRight = "SeDenyRemoteInteractiveLogonRight"; }, #BUILTIN\Guests
-        @{ Username = "S-1-5-5-113"; UserRight = "SeDenyRemoteInteractiveLogonRight"; } #NT AUTHORITY\Local account
+        @{ Username = "S-1-5-113"; UserRight = "SeDenyRemoteInteractiveLogonRight"; } #NT AUTHORITY\Local account
     )
     
     foreach ($AddRight in $AddRightParams) {
@@ -174,7 +174,7 @@ function Set-CategorySecurityOptions {
 
 Disable-SMBv1
 #StorePasswordUsingReversibleEncryption
-AccountLockout
+Set-AccountLockout
 Set-UserRightsRemove
 Set-UserRightsAdd
 Set-CategorySecurityOptions
