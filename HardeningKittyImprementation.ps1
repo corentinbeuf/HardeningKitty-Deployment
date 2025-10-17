@@ -172,9 +172,104 @@ function Set-CategorySecurityOptions {
     }
 }
 
+#ID 1400, EnableFirewall (Domain Profile, Policy)
+#ID 1418, EnableFirewall (Domain Profile)
+#ID 1401, Inbound Connections (Domain Profile, Policy)
+#ID 1419, Inbound Connections (Domain Profile)
+#ID 1402, Outbound Connections (Domain Profile, Policy)
+#ID 1420, Outbound Connections (Domain Profile)
+#ID 1403, Log size limit (Domain Profile, Policy)
+#ID 1421, Log size limit (Domain Profile)
+#ID 1404, Log dropped packets (Domain Profile, Policy)
+#ID 1422, Log dropped packets (Domain Profile)
+#ID 1405, Log successful connections (Domain Profile, Policy)
+#ID 1423, Log successful connections (Domain Profile)
+#ID 1406, EnableFirewall (Private Profile, Policy)
+#ID 1424, EnableFirewall (Private Profile)
+#ID 1407, Inbound Connections (Private Profile, Policy)
+#ID 1425, Inbound Connections (Private Profile)
+#ID 1408, Outbound Connections (Private Profile, Policy)
+#ID 1426, Outbound Connections (Private Profile)
+#ID 1409, Log size limit (Private Profile, Policy)
+#ID 1427, Log size limit (Private Profile)
+#ID 1410, Log dropped packets (Private Profile, Policy)
+#ID 1428, Log dropped packets (Private Profile)
+#ID 1411, Log successful connections (Private Profile, Policy)
+#ID 1429, Log successful connections (Private Profile)
+#ID 1412, EnableFirewall (Public Profile, Policy)
+#ID 1430, EnableFirewall (Public Profile)
+#ID 1413, Inbound Connections (Public Profile, Policy)
+#ID 1431, Inbound Connections (Public Profile)
+#ID 1414, Outbound Connections (Public Profile, Policy)
+#ID 1432, Outbound Connections (Public Profile)
+#ID 1415, Log size limit (Public Profile, Policy)
+#ID 1433, Log size limit (Public Profile)
+#ID 1416, Log dropped packets (Public Profile, Policy)
+#ID 1434, Log dropped packets (Public Profile)
+#ID 1417, Log successful connections (Public Profile, Policy)
+#ID 1435, Log successful connections (Public Profile)
+Function Set-WindowsFirewall {
+    [CmdletBinding()]
+    param()
+    
+    Write-Host "`n[INFO] Setup Windows Firewall on each profile..." -ForegroundColor Cyan
+
+    $firewallParams = @(
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile"; Name = "EnableFirewall"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile"; Name = "DefaultInboundAction"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile"; Name = "DefaultOutboundAction"; Value = 0 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging"; Name = "LogFileSize"; Value = 16384 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging"; Name = "LogDroppedPackets"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile\Logging"; Name = "LogSuccessfulConnections"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile"; Name = "EnableFirewall"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile"; Name = "DefaultInboundAction"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile"; Name = "DefaultOutboundAction"; Value = 0 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile\Logging"; Name = "LogFileSize"; Value = 16384 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile\Logging"; Name = "LogDroppedPackets"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile\Logging"; Name = "LogSuccessfulConnections"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"; Name = "EnableFirewall"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"; Name = "DefaultInboundAction"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile"; Name = "DefaultOutboundAction"; Value = 0 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging"; Name = "LogFileSize"; Value = 16384 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging"; Name = "LogDroppedPackets"; Value = 1 },
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging"; Name = "LogSuccessfulConnections"; Value = 1 },
+        @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging"; Name = "LogFileSize"; Value = 16384 },
+        @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging"; Name = "LogDroppedPackets"; Value = 1 },
+        @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\PublicProfile\Logging"; Name = "LogSuccessfulConnections"; Value = 1 }
+    )
+
+    foreach ($firewallParam in $firewallParams) {
+        $params = @{
+            Path    = $firewallParam.Path
+            Name    = $firewallParam.Name
+            Value   = $firewallParam.Value
+        }
+
+        try {
+            if (!(Test-Path $firewallParam.Path)) {
+                Write-Host "✅ Create key : $($firewallParam.Path)" -ForegroundColor Green
+                New-Item $firewallParam.Path | Out-Null
+            } else {
+                Write-Host "⚠️ Key already exist : $($firewallParam.Path)" -ForegroundColor Yellow
+            }
+            
+            if ((Get-ItemProperty -Path "$($firewallParam.Path)" -Name "$($firewallParam.Name)" -ErrorAction SilentlyContinue).$($firewallParam.Name) -notlike $($firewallParam.Value)) {
+                Set-ItemProperty @params | Out-Null
+                Write-Host "✅ Create/modify the value $($firewallParam.Name) with the value $($firewallParam.Value)" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ Value already exist and is set" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "❌ Impossible to create the key $($firewallParam.Path) and to modify the value '$($firewallParam.Name)'" -ForegroundColor Red
+            Write-Host $_.Exception.Message -ForegroundColor DarkRed
+        }
+    }
+}
+
 Disable-SMBv1
 #StorePasswordUsingReversibleEncryption
 Set-AccountLockout
 Set-UserRightsRemove
 Set-UserRightsAdd
 Set-CategorySecurityOptions
+Set-WindowsFirewall
