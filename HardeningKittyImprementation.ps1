@@ -266,6 +266,10 @@ Function Set-WindowsFirewall {
     }
 }
 
+Set-CategoryAdvancedAuditPolicyConfiguration {
+
+}   
+
 Disable-SMBv1
 #StorePasswordUsingReversibleEncryption
 Set-AccountLockout
@@ -273,3 +277,4 @@ Set-UserRightsRemove
 Set-UserRightsAdd
 Set-CategorySecurityOptions
 Set-WindowsFirewall
+Set-CategoryAdvancedAuditPolicyConfiguration
