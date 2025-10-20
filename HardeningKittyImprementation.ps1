@@ -268,7 +268,47 @@ Function Set-WindowsFirewall {
 
 Set-CategoryAdvancedAuditPolicyConfiguration {
 
-}   
+}
+
+Set-ControlPanel {
+    [CmdletBinding()]
+    param()
+    
+    Write-Host "`n[INFO] Setup Windows Firewall on each profile..." -ForegroundColor Cyan
+
+    $controlPanelParams = @(
+        @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "AllowOnlineTips"; Value = 0 }, #Allow Online Tips
+        @{ Path = "HKLM:\Software\Policies\Microsoft\Windows\Personalization"; Name = "NoLockScreenCamera"; Value = 1 }, #ID 1600, Personalization: Prevent enabling lock screen camera
+        @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization"; Name = "AllowInputPersonalization"; Value = 0 } #	Regional and Language Options: Allow users to enable online speech recognition services
+    )
+
+    foreach ($controlPanelParam in $controlPanelParams) {
+        $params = @{
+            Path    = $controlPanelParam.Path
+            Name    = $controlPanelParam.Name
+            Value   = $controlPanelParam.Value
+        }
+
+        try {
+            if (!(Test-Path $controlPanelParam.Path)) {
+                Write-Host "✅ Create key : $($controlPanelParam.Path)" -ForegroundColor Green
+                New-Item $controlPanelParam.Path | Out-Null
+            } else {
+                Write-Host "⚠️ Key already exist : $($controlPanelParam.Path)" -ForegroundColor Yellow
+            }
+            
+            if ((Get-ItemProperty -Path "$($controlPanelParam.Path)" -Name "$($controlPanelParam.Name)" -ErrorAction SilentlyContinue).$($controlPanelParam.Name) -notlike $($controlPanelParam.Value)) {
+                Set-ItemProperty @params | Out-Null
+                Write-Host "✅ Create/modify the value $($controlPanelParam.Name) with the value $($controlPanelParam.Value)" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ Value already exist and is set" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "❌ Impossible to create the key $($controlPanelParam.Path) and to modify the value '$($controlPanelParam.Name)'" -ForegroundColor Red
+            Write-Host $_.Exception.Message -ForegroundColor DarkRed
+        }
+    }
+}
 
 Disable-SMBv1
 #StorePasswordUsingReversibleEncryption
@@ -278,3 +318,4 @@ Set-UserRightsAdd
 Set-CategorySecurityOptions
 Set-WindowsFirewall
 Set-CategoryAdvancedAuditPolicyConfiguration
+Set-ControlPanel
